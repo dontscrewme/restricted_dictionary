@@ -214,7 +214,7 @@ int restricted_dictionary_multiRestrict(struct restricted_dictionary *r_dict,
 
   int ret = 0;
 
-  for (int i = 0; i < num_masters; i++) {
+  for (unsigned i = 0; i < num_masters; i++) {
     if (!is_valid_pair(master_pairs[i])) {
       error_callback(
           "%s: invalid master pair format at index %d, expected 'A=B'\n",
