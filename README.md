@@ -1,1 +1,1 @@
-remember to include hierarchy_list and dictionary before use
+remember to include hierarchy_list and dictionary before using it
