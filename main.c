@@ -144,6 +144,72 @@ void test_restrict()
   assert(restricted_dictionary_unrestrict_all(r_dict, "employee=Andy") == 0);
   restricted_dictionary_del(r_dict);
 
+  // Test Case 13: No Restrictions
+  r_dict = restricted_dictionary_new(d);
+  char **restrictions = NULL;
+  unsigned int count = 0;
+  int ret = restricted_dictionary_get_restrictions(r_dict, "role=admin", &restrictions, &count);
+  assert(ret == 0);
+  assert(count == 0);
+  assert(restrictions == NULL);
+  restricted_dictionary_del(r_dict);
+
+  // Test Case 14: Single Restriction
+  r_dict = restricted_dictionary_new(d);
+  restricted_dictionary_restrict(r_dict, "role=admin", "access=all");
+  restrictions = NULL;
+  count = 0;
+  ret = restricted_dictionary_get_restrictions(r_dict, "role=admin", &restrictions, &count);
+  assert(ret == 0);
+  assert(count == 1);
+  assert(strcmp(restrictions[0], "access=all") == 0);
+  for (unsigned i = 0; i < count; i++)
+  {
+    free(restrictions[i]);
+  }
+  free(restrictions);
+  restricted_dictionary_del(r_dict);
+
+  // Test Case 15: Multiple Restrictions
+  r_dict = restricted_dictionary_new(d);
+  restricted_dictionary_restrict(r_dict, "role=admin", "access=all");
+  restricted_dictionary_restrict(r_dict, "role=admin", "security=high");
+  restricted_dictionary_restrict(r_dict, "role=admin", "audit=true");
+  restrictions = NULL;
+  count = 0;
+  ret = restricted_dictionary_get_restrictions(r_dict, "role=admin", &restrictions, &count);
+  assert(ret == 0);
+  assert(count == 3);
+
+  int found[3] = {0};
+  for (unsigned i = 0; i < count; i++)
+  {
+    if (strcmp(restrictions[i], "access=all") == 0)
+      found[0]++;
+    if (strcmp(restrictions[i], "security=high") == 0)
+      found[1]++;
+    if (strcmp(restrictions[i], "audit=true") == 0)
+      found[2]++;
+  }
+  assert(found[0] == 1 && found[1] == 1 && found[2] == 1);
+
+  for (unsigned i = 0; i < count; i++)
+  {
+    free(restrictions[i]);
+  }
+  free(restrictions);
+  restricted_dictionary_del(r_dict);
+
+  // Test Case 16: Invalid inputs
+  r_dict = restricted_dictionary_new(d);
+  restrictions = NULL;
+  count = 0;
+  assert(restricted_dictionary_get_restrictions(NULL, "A=B", &restrictions, &count) == -1);
+  assert(restricted_dictionary_get_restrictions(r_dict, "invalid", &restrictions, &count) == -1);
+  assert(restricted_dictionary_get_restrictions(r_dict, "A=B", NULL, &count) == -1);
+  assert(restricted_dictionary_get_restrictions(r_dict, "A=B", &restrictions, NULL) == -1);
+  restricted_dictionary_del(r_dict);
+
 
   dictionary_del(d);
 }
