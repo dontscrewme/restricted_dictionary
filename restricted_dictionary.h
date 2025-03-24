@@ -20,5 +20,10 @@ int restricted_dictionary_unrestrict(struct restricted_dictionary *r_dict,
 int restricted_dictionary_unrestrict_all(struct restricted_dictionary *r_dict,
                                          char *slave_pair);
 
+int restricted_dictionary_get_restrictions(struct restricted_dictionary *r_dict,
+                                           const char *slave_pair,
+                                           char ***restrictions,
+                                           unsigned int *count);
+
 
 #endif // RESTRICTED_DICTIONARY_H
