@@ -332,3 +332,86 @@ int restricted_dictionary_unrestrict_all(struct restricted_dictionary *r_dict, c
 
   return 0;
 }
+
+int restricted_dictionary_get_restrictions(struct restricted_dictionary *r_dict,
+                                           const char *slave_pair,
+                                           char ***restrictions,
+                                           unsigned int *count)
+{
+  *count = 0;
+
+  if (!r_dict || !slave_pair || !restrictions || !count)
+  {
+    error_callback("%s: invalid input\n", __func__);
+    return -1;
+  }
+
+  char *slave_key = NULL;
+  char *slave_value = NULL;
+  if (split_pair(slave_pair, &slave_key, &slave_value) != 0)
+  {
+    error_callback("%s: invalid slave pair format\n", __func__);
+    return -1;
+  }
+
+  struct parent *parent = find_parent(&r_dict->parent_head, slave_key, slave_value);
+  if (!parent)
+  {
+    free(slave_key);
+    free(slave_value);
+    return 0;
+  }
+
+  unsigned int num_children = 0;
+  if (getNumOfChildren(parent, &num_children) != 0)
+  {
+    free(slave_key);
+    free(slave_value);
+    return -1;
+  }
+
+  if (num_children == 0)
+  {
+    free(slave_key);
+    free(slave_value);
+    return 0;
+  }
+
+  *restrictions = malloc(num_children * sizeof(char *));
+  if (!*restrictions)
+  {
+    error_callback("%s: malloc failed\n", __func__);
+    free(slave_key);
+    free(slave_value);
+    return -1;
+  }
+
+  unsigned int index = 0;
+  struct child *current_child;
+  list_for_each_entry(current_child, &parent->child_head, list)
+  {
+    size_t len = strlen(current_child->key) + strlen(current_child->value) + 2;
+    (*restrictions)[index] = malloc(len);
+    if (!(*restrictions)[index])
+    {
+      error_callback("%s: malloc failed\n", __func__);
+      for (unsigned int i = 0; i < index; i++)
+      {
+        free((*restrictions)[i]);
+      }
+      free(*restrictions);
+      *restrictions = NULL;
+      free(slave_key);
+      free(slave_value);
+      return -1;
+    }
+    snprintf((*restrictions)[index], len, "%s=%s",
+             current_child->key, current_child->value);
+    index++;
+  }
+
+  *count = num_children;
+  free(slave_key);
+  free(slave_value);
+  return 0;
+}
