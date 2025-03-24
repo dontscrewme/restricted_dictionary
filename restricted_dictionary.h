@@ -1,11 +1,10 @@
 #ifndef RESTRICTED_DICTIONARY_H
 #define RESTRICTED_DICTIONARY_H
 
-#include "dictionary.h"
-
+struct dictionary;
 struct restricted_dictionary;
 
-struct restricted_dictionary *restricted_dictionary_new(unsigned int size);
+struct restricted_dictionary *restricted_dictionary_new(struct dictionary* base_dict);
 void restricted_dictionary_del(struct restricted_dictionary *r_dict);
 int restricted_dictionary_set(struct restricted_dictionary *r_dict,
                               const char *key, const char *val);
