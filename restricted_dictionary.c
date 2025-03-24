@@ -338,8 +338,6 @@ int restricted_dictionary_get_restrictions(struct restricted_dictionary *r_dict,
                                            char ***restrictions,
                                            unsigned int *count)
 {
-  *count = 0;
-
   if (!r_dict || !slave_pair || !restrictions || !count)
   {
     error_callback("%s: invalid input\n", __func__);
