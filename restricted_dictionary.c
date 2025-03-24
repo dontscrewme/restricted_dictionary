@@ -1,3 +1,4 @@
+#include "dictionary.h"
 #include "restricted_dictionary.h"
 #include "hierarchy_list.h"
 #include <stdarg.h>
@@ -35,7 +36,8 @@ static int has_restriction(struct restricted_dictionary *r_dict,
   return 0;
 }
 
-struct restricted_dictionary *restricted_dictionary_new(unsigned int size) {
+struct restricted_dictionary *restricted_dictionary_new(struct dictionary* base_dict)
+{
   struct restricted_dictionary *r_dict =
       malloc(sizeof(struct restricted_dictionary));
   if (!r_dict) {
@@ -43,13 +45,7 @@ struct restricted_dictionary *restricted_dictionary_new(unsigned int size) {
     return NULL;
   }
 
-  r_dict->base = dictionary_new(size);
-  if (!r_dict->base) {
-    error_callback("%s: dictionary_new() failed\n", __func__);
-    free(r_dict);
-    return NULL;
-  }
-
+  r_dict->base = base_dict;
   INIT_LIST_HEAD(&r_dict->parent_head);
 
   return r_dict;
@@ -59,11 +55,6 @@ void restricted_dictionary_del(struct restricted_dictionary *r_dict) {
   if (!r_dict) {
     return;
   }
-
-  if (r_dict->base) {
-    dictionary_del(r_dict->base);
-  }
-
   unset_parents(&r_dict->parent_head);
 
   free(r_dict);
@@ -304,6 +295,40 @@ int restricted_dictionary_unrestrict(struct restricted_dictionary *r_dict,
   free(slave_value);
   free(master_key);
   free(master_value);
+
+  return 0;
+}
+
+int restricted_dictionary_unrestrict_all(struct restricted_dictionary *r_dict, char *slave_pair) {
+  if (!r_dict || !slave_pair) {
+    error_callback("%s: invalid input\n", __func__);
+    return -1;
+  }
+
+  char *slave_key = NULL;
+  char *slave_value = NULL;
+  if (split_pair(slave_pair, &slave_key, &slave_value) == -1) {
+    error_callback("%s: split_pair(slave) failed\n", __func__);
+    return -1;
+  }
+
+  struct parent *slave_parent = find_parent(&r_dict->parent_head, slave_key, slave_value);
+  if (!slave_parent) {
+    error_callback("%s: slave parent not found\n", __func__);
+    free(slave_key);
+    free(slave_value);
+    return -1;
+  }
+
+  struct child *current_child, *tmp_child;
+  list_for_each_entry_safe(current_child, tmp_child, &slave_parent->child_head, list) {
+    unset_child(slave_parent, current_child->key, current_child->value);
+  }
+
+  unset_parent(&r_dict->parent_head, slave_key, slave_value);
+
+  free(slave_key);
+  free(slave_value);
 
   return 0;
 }
