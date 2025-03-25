@@ -12,7 +12,12 @@ Found 3 restrictions for 'ERPS=ON':
 - QoS=ON
 
 dumping:
+
                  QoS    [ON]
+                 
                 ERPS    [OFF]
+                
                 SNTP    [OFF]
+                
                 VLAN    [OFF]
+                
