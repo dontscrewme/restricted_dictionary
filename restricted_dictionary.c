@@ -29,6 +29,8 @@ static int has_restriction(struct restricted_dictionary *r_dict,
         dictionary_get(r_dict->base, current_master->key, "NULL");
     if (strcmp("NULL", value_in_dict) != 0 &&
         strcmp(value_in_dict, current_master->value) == 0) {
+      error_callback("%s: Attempt to set '%s=%s' is denied due to restriction '%s=%s'\n",
+                     __func__, key, val, current_master->key, current_master->value);
       return 1;
     }
   }
@@ -68,8 +70,6 @@ int restricted_dictionary_set(struct restricted_dictionary *r_dict,
   }
 
   if (has_restriction(r_dict, key, val)) {
-    error_callback("%s: restriction prevents setting key=%s, val=%s\n",
-                   __func__, key, val);
     return -1;
   }
 
