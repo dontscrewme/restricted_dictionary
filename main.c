@@ -6,7 +6,7 @@
 #include "dictionary.h"
 #include "restricted_dictionary.h"
 
-void test_new()
+void test_new(void)
 {
   // Test Case 1: Create a restricted dictionary with a valid size
   struct dictionary *d = dictionary_new(10);
@@ -30,13 +30,13 @@ void test_new()
   dictionary_del(d);
 }
 
-void test_del()
+void test_del(void)
 {
   // Test Case 1: Delete a NULL restricted dictionary
   restricted_dictionary_del(NULL);
 }
 
-void test_set()
+void test_set(void)
 {
   struct restricted_dictionary *r_dict = NULL;
   struct dictionary *d = dictionary_new(10);
@@ -71,7 +71,7 @@ void test_set()
   dictionary_del(d);
 }
 
-void test_restrict()
+void test_restrict(void)
 {
   struct restricted_dictionary *r_dict = NULL;
   struct dictionary *d = dictionary_new(10);
@@ -139,7 +139,7 @@ void test_restrict()
   restricted_dictionary_del(r_dict);
 
   // Test Case 12: Unrestrict all with unrestrict_all
-  r_dict = restricted_dictionary_new(d);  // Create the restricted dictionary
+  r_dict = restricted_dictionary_new(d); // Create the restricted dictionary
   assert(restricted_dictionary_restrict(r_dict, "employee=Andy", "company=Google") == 0);
   assert(restricted_dictionary_unrestrict_all(r_dict, "employee=Andy") == 0);
   restricted_dictionary_del(r_dict);
@@ -210,7 +210,6 @@ void test_restrict()
   assert(restricted_dictionary_get_restrictions(r_dict, "A=B", &restrictions, NULL) == -1);
   restricted_dictionary_del(r_dict);
 
-
   dictionary_del(d);
 }
 
@@ -221,6 +220,44 @@ int main()
   test_set();
   test_restrict();
   printf("All test cases passed!\n");
+  
+  struct dictionary *d = dictionary_new(10);
+  struct restricted_dictionary *r_dict = restricted_dictionary_new(d);
+
+  // startup code: set restrictions
+  restricted_dictionary_restrict(r_dict, "ERPS=ON", "QoS=ON");
+  restricted_dictionary_restrict(r_dict, "ERPS=ON", "VLAN=ON");
+  restricted_dictionary_restrict(r_dict, "ERPS=ON", "SNTP=ON");
+
+  // startup config: set initial values
+  restricted_dictionary_set(r_dict, "ERPS", "OFF");
+  restricted_dictionary_set(r_dict, "QoS", "OFF");
+  restricted_dictionary_set(r_dict, "VLAN", "OFF");
+  restricted_dictionary_set(r_dict, "SNTP", "OFF");
+
+  // some application code
+  restricted_dictionary_set(r_dict, "QoS", "ON");
+  if (restricted_dictionary_set(r_dict, "ERPS", "ON") == -1)
+  {
+    unsigned count = 0;
+    char** restrictions = NULL;
+    restricted_dictionary_get_restrictions(r_dict, "ERPS=ON", &restrictions, &count);
+    printf("Found %u restrictions for 'ERPS=ON':\n", count);
+    for (unsigned i = 0; i < count; i++) {
+        printf("- %s\n", restrictions[i]);
+    }
+    
+    for (unsigned int i = 0; i < count; i++) {
+        free(restrictions[i]);
+    }
+    free(restrictions);
+  }
+
+  printf("\ndumping:\n");
+  dictionary_dump(d, stdout);
+
+  dictionary_del(d);
+  restricted_dictionary_del(r_dict);
 
   return 0;
 }
