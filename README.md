@@ -5,6 +5,7 @@ While a regular dictionary simply stores key-value pairs, the restricted_diction
 The main.c's output is as follows:
 
 has_restriction: Attempt to set 'ERPS=ON' is denied due to restriction 'QoS=ON'
+
 Found 3 restrictions for 'ERPS=ON':
 - SNTP=ON
 - VLAN=ON
