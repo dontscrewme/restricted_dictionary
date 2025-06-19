@@ -19,7 +19,7 @@ struct dictionary {
 };
 
 struct dictionary *dictionary_new(size_t size);
-void dictionary_del(struct dictionary *vd);
+void dictionary_del(struct dictionary *d);
 const char *dictionary_get(const struct dictionary *d, const char *key,
 													 const char *def);
 int dictionary_set(struct dictionary *vd, const char *key, const char *val);
