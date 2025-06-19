@@ -130,7 +130,7 @@ const char *dictionary_get(const struct dictionary *d, const char *key,
 }
 
 int dictionary_set(struct dictionary *d, const char *key, const char *val) {
-	if (!d || !key || !val) {
+	if (!d || !key) {
 		error_callback("%s: invalid input\n", __func__);
 		return -1;
 	}
