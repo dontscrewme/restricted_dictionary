@@ -227,7 +227,7 @@ void dictionary_dump(const struct dictionary *d, FILE *out) {
 
 	for (unsigned int i = 0; i < d->size; i++) {
 		struct bucket *curr = d->table[i];
-		if (curr) {
+		while (curr) {
 			fprintf(out, "%20s\t[%s]\n", d->table[i]->key,
 							d->table[i]->value ? d->table[i]->value : "UNDEF");
 			curr = curr->next;
